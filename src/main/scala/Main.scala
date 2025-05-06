@@ -14,26 +14,32 @@ given badMonadImplementation: Monad[IO] with
       f(m.run()) // The only difference is here
 
 def printHelloWorld(using Monad[IO]) =
-  IO(print("Hello ")).flatMap(_ => IO(println("world!")))
+  println("DEFINITION PHASE (nothing should be printed)")
+  val io = IO(print("Hello ")).flatMap(_ => IO(println("world!")))
 
-def printHelloWorldForComprehension(using Monad[IO]) =
-  for
+  println("\nEVALUATION PHASE (\"Hello world\" should be printed)")
+  io.run()
+
+@main def main(): Unit =
+  println("*** Running the bad implementation ***\n")
+  printHelloWorld(using badMonadImplementation)
+
+  println("\n\n*** Running the good implementation ***\n")
+  printHelloWorld(using goodMonadImplementation)
+
+def printHelloWorldFor(using Monad[IO]) =
+  println("DEFINITION PHASE (nothing should be printed)")
+  val ioFor = for
     _ <- IO(print("Hello "))
     _ <- IO(println("world!"))
   yield ()
 
-def test(using Monad[IO]) =
-  println("DEFINITION PHASE (nothing should be printed)")
-  val io = printHelloWorld
-  val ioFor = printHelloWorldForComprehension
-
-  println("EVALUATION PHASE (\"Hello world\" should be printed twice)")
-  io.run()
+  println("\nEVALUATION PHASE (\"Hello world\" should be printed)")
   ioFor.run()
 
-@main def main(): Unit =
+@main def mainFor(): Unit =
   println("*** Running the bad implementation ***\n")
-  test(using badMonadImplementation)
+  printHelloWorldFor(using badMonadImplementation)
 
   println("\n\n*** Running the good implementation ***\n")
-  test(using goodMonadImplementation)
+  printHelloWorldFor(using goodMonadImplementation)
