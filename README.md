@@ -74,3 +74,39 @@ def printHelloWorldFor(using Monad[IO]) =
   // EVALUATION PHASE ("Hello world" should be printed)
   // Hello world!
 ```
+
+## Eplanation
+
+### Structure of the example repository
+
+A basic Monad typeclass is defined [here](./src/main/scala/Monad.scala)
+
+A basic IO datatype is defined [here](./src/main/scala/IO.scala)
+
+In the [Main.scala](./src/main/scala/Main.scala) file are provided two given instances of Monad for IO. They only differ in the implementation of the flatMap function.
+
+### Implementation differences
+
+```scala
+given goodMonadImplementation: Monad[IO] with
+  def unit[A](a: A): IO[A] = IO(a)
+  extension [A](m: IO[A])
+    def flatMap[B](f: A => IO[B]): IO[B] =
+      IO(f(m.run()).run()) // The only difference is here
+
+given badMonadImplementation: Monad[IO] with
+  def unit[A](a: A): IO[A] = IO(a)
+  extension [A](m: IO[A])
+    def flatMap[B](f: A => IO[B]): IO[B] =
+      f(m.run()) // The only difference is here
+```
+
+Note that object IO defines an apply function with one call-by-name parameter.
+
+This means that writing `IO(println("Hello"))` will construct an instance of IO without running `println`.
+
+The error resides here, when the flatMap function of the bad implementation is called it will immediately evaluate `f` and therefore `m.run()` too.
+
+While the good implementation will just wrap those calls into a new IO instance without executing them.
+
+### Why the for comprehension behaves differently?
