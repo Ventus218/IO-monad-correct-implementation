@@ -34,9 +34,9 @@ def printHelloWorld(using Monad[IO]) =
   // Hello world!
 ```
 
-A computation described by a IO monad should only be evaluated when explicitly run and not while being defined.
+A computation described by an IO monad should only be evaluated when explicitly run and not while being defined.
 
-The example shows that when using the bad implementation something gets print to the console and that should not happen.
+The example shows that when using the bad implementation something gets printed to the console and that should not happen.
 
 ### Different behavior when using for comprehension
 
@@ -75,7 +75,7 @@ def printHelloWorldFor(using Monad[IO]) =
   // Hello world!
 ```
 
-## Eplanation
+## Explanation
 
 ### Structure of the example repository
 
@@ -83,7 +83,7 @@ A basic `Monad` typeclass is defined [here](./src/main/scala/Monad.scala)
 
 A basic `IO` datatype is defined [here](./src/main/scala/IO.scala)
 
-In the [Main.scala](./src/main/scala/Main.scala) file are provided two given instances of `Monad` for `IO`. They only differ in the implementation of the `flatMap` function.
+In the [Main.scala](./src/main/scala/Main.scala#L4) file are provided two given instances of `Monad` for `IO`. They only differ in the implementation of the `flatMap` function.
 
 ### Implementation differences
 
@@ -101,7 +101,7 @@ given badMonadImplementation: Monad[IO] with
       f(m.run()) // The only difference is here
 ```
 
-Note that object `IO` defines an apply function with one call-by-name parameter. This means that writing `IO(println("Hello"))` will construct an instance of `IO` without running `println`.
+Note that object `IO` defines an apply function with one call-by-name parameter. This means that writing `IO(println("Hello"))` will construct an instance of `IO` without running the `println`.
 
 The error resides here, when the `flatMap` function of the bad implementation is called it will immediately evaluate `f` and therefore `m.run()` too.
 
@@ -109,6 +109,6 @@ While the good implementation will just wrap those calls into a new `IO` instanc
 
 ### Why the for comprehension behaves differently?
 
-The version which uses for comprehension behaves differently (before running the computation it prints "Hello world") but still wrongly.
+The version which uses for comprehension behaves differently (before running the computation it also prints "world") but still wrongly.
 
-The reason is that when the for comprehension will be desugared it will result in a call to `map` in the end. And the `map` function is automatically implemented in the `Monad` typeclass by means of the `flatMap`.
+The reason is that when the for comprehension is be desugared it results in a call to `map` in the end. And the `map` function is automatically implemented in the `Monad` typeclass by means of the `flatMap`.
